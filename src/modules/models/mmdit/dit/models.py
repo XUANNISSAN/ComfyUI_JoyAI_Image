@@ -44,7 +44,8 @@ class BlockGPUManager:
         self._original_block_ref = transformer_model.double_blocks
 
         self._num_groups = (len(self._original_block_ref) + self.block_group_size - 1) // self.block_group_size
-    
+        print(f"Total number of blocks: {len(self._original_block_ref)}")
+        print(f"Number of groups: {self._num_groups}")
         for attr in ['img_in', 'condition_embedder', 'norm_out', 'proj_out', ]:
             if hasattr(transformer_model, attr):
                 self.submodule.append(getattr(transformer_model, attr))
@@ -615,7 +616,8 @@ class Transformer3DModel(ModelMixin, ConfigMixin):
             if gpu_manager is not None:
                 current_group = layer_index // gpu_manager.block_group_size
                 next_group = current_group + 1
-                gpu_manager._unload_unused_groups(keep={current_group, next_group})
+                #gpu_manager._unload_unused_groups(keep={current_group, next_group})
+                gpu_manager._unload_unused_groups(keep={current_group})
 
         img_len = img.shape[1]
         x = torch.cat((img, txt), 1)
