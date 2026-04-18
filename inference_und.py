@@ -263,7 +263,7 @@ def load_qwen3vl_model(safetensors_path,gguf_path ) -> torch.nn.Module:
 
         model.eval().to(dtype)
     elif gguf_path is not None:
-        g_dict=load_gguf_checkpoint(gguf_path)
+        g_dict=load_gguf_checkpoint(gguf_path,True)
         match_state_dict(model, g_dict,show_num=20)
         set_gguf2meta_model(model,g_dict,dtype,torch.device("cpu"))
         del g_dict
@@ -376,7 +376,7 @@ def get_conditioning(clip,prompt, images,infer_device):
     negative=[[n_prompt_embeds,{"prompt_attention_mask": n_prompt_embeds_mask}]]
     return positive,negative
 
-def load_gguf_checkpoint(gguf_checkpoint_path):
+def load_gguf_checkpoint(gguf_checkpoint_path,qwen_mode=False):
 
     import logging
     logging.basicConfig(level=logging.INFO)
@@ -414,8 +414,11 @@ def load_gguf_checkpoint(gguf_checkpoint_path):
             )
 
         weights = torch.from_numpy(tensor.data) #tensor.data.copy()
- 
-        parsed_parameters[name.replace("model.", "")] = GGUFParameter(weights, quant_type=quant_type) if is_gguf_quant else weights
+        if qwen_mode:
+            parsed_parameters[name] = GGUFParameter(weights, quant_type=quant_type) if is_gguf_quant else weights
+        else:
+
+            parsed_parameters[name.replace("model.", "")] = GGUFParameter(weights, quant_type=quant_type) if is_gguf_quant else weights
         del tensor,weights
         if i > 0 and i % 1000 == 0:  # 每1000个tensor执行一次gc
             logger.info(f"Processed {i}tensors...")
