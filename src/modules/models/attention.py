@@ -80,6 +80,12 @@ def attention(
     softmax_scale: float = None,
     attn_kwargs: dict = None,
 ):
+    """
+    Args:
+        q (torch.Tensor): Query tensor of shape [batch_size, seq_len, num_heads, head_dim]
+        k (torch.Tensor): Key tensor of shape [batch_size, seq_len, num_heads, head_dim]
+        v (torch.Tensor): Value tensor of shape [batch_size, seq_len, num_heads
+    """
     if backend == "auto":
         backend = get_preferred_attention_backend()
     # Fall back to torch_spda when flash_attn was requested but unavailable
